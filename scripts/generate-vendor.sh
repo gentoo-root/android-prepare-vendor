@@ -52,7 +52,7 @@ command_exists() {
 }
 
 verify_input() {
-  if [[ ! -d "$1/vendor" || ! -d "$1/system" || ! -f "$1/system/build.prop" ]]; then
+  if [[ ! -d "$1/vendor" || ! -d "$1/system" || ! -d "$1/radio" || ! -f "$1/system/build.prop" ]]; then
     echo "[-] Invalid input directory structure."
     usage
   fi
@@ -165,6 +165,14 @@ extract_blobs() {
   done
 }
 
+copy_radio() {
+  local INDIR="$1"
+  local OUTDIR_RADIO="$2/radio"
+
+  mkdir -p "$OUTDIR_RADIO"
+  cp -t "$OUTDIR_RADIO" "$INDIR/radio/radio.img" "$INDIR/radio/bootloader.img"
+}
+
 gen_vendor_blobs_mk() {
   local BLOBS_LIST="$1"
   local OUTDIR="$2"
@@ -273,6 +281,20 @@ gen_board_cfg_mk() {
   echo "" >> "$OUTMK"
   echo 'BOARD_VENDORIMAGE_FILE_SYSTEM_TYPE := ext4' >> "$OUTMK"
   echo "BOARD_VENDORIMAGE_PARTITION_SIZE := $v_img_sz" >> "$OUTMK"
+}
+
+gen_board_vendor_mk() {
+  local OUTDIR="$1"
+  local OUTMK="$OUTDIR/AndroidBoardVendor.mk"
+
+  cat > "$OUTMK" << "EOF"
+# Auto-generated file, do not edit
+
+LOCAL_PATH := $(call my-dir)
+
+$(call add-radio-file,radio/bootloader.img)
+$(call add-radio-file,radio/radio.img)
+EOF
 }
 
 zip_needs_resign() {
@@ -608,6 +630,7 @@ mkdir -p $PROP_EXTRACT_BASE
 # Copy device specific files from input
 echo "[*] Copying files to '$OUTPUT_VENDOR' ..."
 extract_blobs $BLOBS_LIST $INPUT_DIR $OUTPUT_VENDOR
+copy_radio $INPUT_DIR $OUTPUT_VENDOR
 
 # Generate $DEVICE-vendor-blobs.mk makefile (all prebuilts except APKs/JARs)
 echo "[*] Generating '$DEVICE-vendor-blobs.mk' makefile"
@@ -620,6 +643,10 @@ gen_dev_vendor_mk $OUTPUT_VENDOR
 # Generate BoardConfigVendor.mk (vendor partition type)
 echo "[*] Generating 'BoardConfigVendor.mk'"
 gen_board_cfg_mk $INPUT_DIR $OUTPUT_VENDOR $DEVICE
+
+# Generate AndroidBoardVendor.mk (radio and bootloader firmware)
+echo "[*] Generating 'AndroidBoardVendor.mk'"
+gen_board_vendor_mk $OUTPUT_VENDOR
 
 # Iterate over directories with bytecode & generate a unified Android.mk file
 echo "[*] Generating 'Android.mk' ..."

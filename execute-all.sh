@@ -230,6 +230,10 @@ fi
 # next script
 mv "$FACTORY_IMGS_DATA/vendor" "$FACTORY_IMGS_R_DATA"
 
+# Binary firmware images also should be simply moved to the input directory
+# of the next script
+mv "$FACTORY_IMGS_DATA/radio" "$FACTORY_IMGS_R_DATA"
+
 # Copy vendor partition image size as saved from $EXTRACT_SCRIPT script
 # $VGEN_SCRIPT will fail over to last known working default if image size
 # file not found when parsing data

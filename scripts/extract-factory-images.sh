@@ -130,6 +130,11 @@ if [ -d "$VENDOR_DATA_OUT" ]; then
   rm -rf "$VENDOR_DATA_OUT"/*
 fi
 
+RADIO_DATA_OUT="$OUTPUT_DIR/radio"
+if [ -d "$RADIO_DATA_OUT" ]; then
+  rm -rf "$RADIO_DATA_OUT"/*
+fi
+
 tarName="$(basename $INPUT_TAR)"
 fileExt="${tarName##*.}"
 archName="$(basename $tarName .$fileExt)"
@@ -223,6 +228,20 @@ fi
 # Unmount
 if ! $umountCmd; then
   echo "[-] '$umountCmd' failed"
+fi
+
+# Copy radio and bootloader firmware
+echo "[*] Copying radio and bootloader firmware ..."
+mkdir -p "$RADIO_DATA_OUT"
+radioImg=$(find "$extractDir" -iname "radio-*.img" | head -n 1)
+bootloaderImg=$(find "$extractDir" -iname "bootloader-*.img" | head -n 1)
+if ! cp "$radioImg" "$RADIO_DATA_OUT/radio.img"; then
+  echo "[-] cp radio.img failed"
+  abort 1
+fi
+if ! cp "$bootloaderImg" "$RADIO_DATA_OUT/bootloader.img"; then
+  echo "[-] cp bootloader.img failed"
+  abort 1
 fi
 
 abort 0
