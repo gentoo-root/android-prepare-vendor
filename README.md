@@ -67,12 +67,15 @@ targeted actions and bugs investigation.
 ## Supported devices
 
 * bullhead - Nexus 5x
-* flounder - Nexus 9
+* flounder - Nexus 9 WiFi (volantis)
 * angler - Nexus 6p
 
 If you want to contribute to `system-proprietary-blobs.txt` files, please test
 against the target device before pull request.
 
+## Work in progress
+
+* flounder - Nexus 9 LTE (volantisg)
 
 ## Warnings
 
@@ -95,6 +98,7 @@ device matching clauses to resolve the issue.
 entire partition, while only a small subset of them is required. This will not
 change since same toolset is used to extract data for other purposes too. Feel
 free to edit them locally at your forks if you want to speed-up the process.
+* Java 8 is required for the bytecode de-optimization tool to work
 
 
 ## Example
